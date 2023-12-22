@@ -1,8 +1,7 @@
 # gps_map
 
 A new Flutter project.
-
-![img.png](img.png)
+![image](https://github.com/intelliM/flutter_king_basic_map/assets/40994539/71b91601-ceaf-4e22-a5ab-ff959c21867c)
 \#오준석 생존코딩 \#인프런 Flutter 왕초보편
 
 ## Getting Started
