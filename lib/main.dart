@@ -41,11 +41,7 @@ class GpsMapAppState extends State<GpsMapApp> {
     zoom: 14.4746,
   );
 
-  static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+  CameraPosition? _initialCameraPosition;
 
   @override
   void initState() {
@@ -56,18 +52,24 @@ class GpsMapAppState extends State<GpsMapApp> {
   Future<void> init() async {
     final position = await _determinePosition();
     print('Position: ${position.toString()}');
+
+    _initialCameraPosition = CameraPosition(
+        target: LatLng(position.latitude, position.longitude), zoom: 17);
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.normal,
-        initialCameraPosition: _kGooglePlex,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-      ),
+      body: _initialCameraPosition == null
+          ? const Center(child: CircularProgressIndicator())
+          : GoogleMap(
+              mapType: MapType.normal,
+              initialCameraPosition: _initialCameraPosition!,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+            ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToTheLake,
         label: const Text('To the lake!'),
@@ -79,9 +81,11 @@ class GpsMapAppState extends State<GpsMapApp> {
   Future<void> _goToTheLake() async {
     final GoogleMapController controller = await _controller.future;
     final position = await Geolocator.getCurrentPosition();
-    final cameraPosition = CameraPosition(target: LatLng(position.latitude, position.longitude), zoom: 17.0);
+    final cameraPosition = CameraPosition(
+        target: LatLng(position.latitude, position.longitude), zoom: 17.0);
 
-    await controller.animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    await controller
+        .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
   }
 
   /// Determine the current position of the device.
