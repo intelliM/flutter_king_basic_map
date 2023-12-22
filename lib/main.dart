@@ -36,12 +36,10 @@ class GpsMapAppState extends State<GpsMapApp> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
+  int _polylineCounter = 0;
   CameraPosition? _initialCameraPosition;
+  Set<Polyline> _polylines = {};
+  LatLng? _prevPosition;
 
   @override
   void initState() {
@@ -51,7 +49,7 @@ class GpsMapAppState extends State<GpsMapApp> {
 
   Future<void> init() async {
     final position = await _determinePosition();
-    print('Position: ${position.toString()}');
+    // print('Position: ${position.toString()}');
 
     _initialCameraPosition = CameraPosition(
         target: LatLng(position.latitude, position.longitude), zoom: 17);
@@ -60,6 +58,23 @@ class GpsMapAppState extends State<GpsMapApp> {
     const locationSettings = LocationSettings();
     Geolocator.getPositionStream(locationSettings: locationSettings)
         .listen((Position position) {
+      final polylineId = PolylineId('${_polylineCounter++}');
+
+      Polyline polyline = Polyline(
+        color: Colors.red,
+        width: 3,
+        polylineId: polylineId,
+        points: [
+          _prevPosition ?? _initialCameraPosition!.target,
+          LatLng(position.latitude, position.longitude),
+        ],
+      );
+
+      setState(() {
+        _polylines.add(polyline);
+        _prevPosition = LatLng(position.latitude, position.longitude);
+      });
+
       _moveCamera(position);
     });
   }
@@ -75,6 +90,7 @@ class GpsMapAppState extends State<GpsMapApp> {
               onMapCreated: (GoogleMapController controller) {
                 _controller.complete(controller);
               },
+              polylines: _polylines,
             ),
     );
   }
