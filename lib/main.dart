@@ -56,6 +56,12 @@ class GpsMapAppState extends State<GpsMapApp> {
     _initialCameraPosition = CameraPosition(
         target: LatLng(position.latitude, position.longitude), zoom: 17);
     setState(() {});
+
+    const locationSettings = LocationSettings();
+    Geolocator.getPositionStream(locationSettings: locationSettings)
+        .listen((Position position) {
+      _moveCamera(position);
+    });
   }
 
   @override
@@ -70,17 +76,11 @@ class GpsMapAppState extends State<GpsMapApp> {
                 _controller.complete(controller);
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
-        label: const Text('To the lake!'),
-        icon: const Icon(Icons.directions_boat),
-      ),
     );
   }
 
-  Future<void> _goToTheLake() async {
+  Future<void> _moveCamera(Position position) async {
     final GoogleMapController controller = await _controller.future;
-    final position = await Geolocator.getCurrentPosition();
     final cameraPosition = CameraPosition(
         target: LatLng(position.latitude, position.longitude), zoom: 17.0);
 
